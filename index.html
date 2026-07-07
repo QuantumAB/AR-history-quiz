@@ -1080,6 +1080,31 @@
       }
     }
 
+
+    /* V10: แก้เส้นแช่คำตอบ เริ่มล่างซ้ายและวนครบกรอบ */
+    .hold-ring-bg,
+    .hold-ring-line{
+      fill:none!important;
+      vector-effect:non-scaling-stroke!important;
+    }
+
+    .hold-ring-bg{
+      stroke:rgba(255,255,255,.28)!important;
+      stroke-width:5!important;
+      stroke-dasharray:none!important;
+      stroke-dashoffset:0!important;
+    }
+
+    .hold-ring-line{
+      stroke:#13d8ff!important;
+      stroke-width:8!important;
+      stroke-linecap:round!important;
+      stroke-linejoin:round!important;
+      stroke-dasharray:100!important;
+      stroke-dashoffset:100!important;
+      transition:stroke-dashoffset .035s linear!important;
+    }
+
   </style>
 </head>
 
@@ -1765,8 +1790,11 @@ function setAnswerCardContent(card, text){
   card.innerHTML = `
     <span class="answer-label">${escapeHtml(text)}</span>
     <svg class="hold-ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <rect class="hold-ring-bg" x="5" y="5" width="90" height="90" rx="18" ry="18" pathLength="1"></rect>
-      <rect class="hold-ring-line" x="5" y="5" width="90" height="90" rx="18" ry="18" pathLength="1"></rect>
+      <!-- เริ่มที่มุมล่างซ้าย แล้ววนตามเข็มนาฬิกาให้ครบกรอบ -->
+      <path class="hold-ring-bg" pathLength="100"
+        d="M 20 95 L 80 95 Q 95 95 95 80 L 95 20 Q 95 5 80 5 L 20 5 Q 5 5 5 20 L 5 80 Q 5 95 20 95"></path>
+      <path class="hold-ring-line" pathLength="100"
+        d="M 20 95 L 80 95 Q 95 95 95 80 L 95 20 Q 95 5 80 5 L 20 5 Q 5 5 5 20 L 5 80 Q 5 95 20 95"></path>
     </svg>
   `;
   clearHoldProgress(card);
@@ -1777,7 +1805,9 @@ function setHoldProgress(card, progress){
   card.style.setProperty('--hold', p);
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    line.style.strokeDashoffset = String(1 - p);
+    // pathLength = 100, เริ่มจากล่างซ้าย แล้วลด dashoffset จนครบ 1 รอบ
+    line.style.strokeDasharray = '100';
+    line.style.strokeDashoffset = String(100 - (p * 100));
   }
 }
 
@@ -1785,8 +1815,8 @@ function clearHoldProgress(card){
   card.style.removeProperty('--hold');
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    line.style.strokeDasharray = '1';
-    line.style.strokeDashoffset = '1';
+    line.style.strokeDasharray = '100';
+    line.style.strokeDashoffset = '100';
   }
 }
 
