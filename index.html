@@ -462,6 +462,167 @@
       .hud,.hud-right{top:max(8px,env(safe-area-inset-top))}
       .chip{font-size:clamp(18px,4.8vw,24px);padding:9px 12px;min-width:110px}
     }
+
+    /* ===============================
+       V5 FIX: จัดโซนใหม่ ไม่ให้ทับกัน
+       - ซ้าย 3 ปุ่ม / ขวา 2 ปุ่ม
+       - กรอบคำถามอยู่ใต้คะแนน-เวลา
+       - ปุ่มไม่หลุดขอบ
+    =============================== */
+    @media (orientation:landscape){
+      .hud,
+      .hud-right{
+        top:max(10px,env(safe-area-inset-top));
+      }
+
+      .topbar{
+        top:max(72px,calc(env(safe-area-inset-top) + 62px));
+        width:clamp(360px,52vw,760px);
+        max-width:calc(100vw - 420px);
+        padding:14px 22px 16px;
+        border-radius:30px;
+      }
+
+      .question-text{
+        font-size:clamp(26px,3.15vw,48px);
+        line-height:1.15;
+      }
+
+      .timer-bar{
+        height:13px;
+        width:min(620px,94%);
+      }
+
+      #answers::before,
+      #answers::after{
+        top:26%;
+        bottom:5%;
+        border-radius:30px;
+      }
+
+      #answers::before{
+        left:clamp(10px,2.4vw,38px);
+        width:clamp(200px,24vw,315px);
+      }
+
+      #answers::after{
+        right:clamp(10px,2.4vw,38px);
+        width:clamp(200px,24vw,315px);
+      }
+
+      .answer-card{
+        width:clamp(190px,23vw,300px);
+        min-height:clamp(82px,13vh,112px);
+        font-size:clamp(30px,4.2vw,56px);
+        border-radius:28px;
+        padding:12px 14px;
+        overflow:hidden;
+        transform-origin:center;
+      }
+
+      .pos-1{left:clamp(16px,3vw,48px); top:29%}
+      .pos-2{left:clamp(16px,3vw,48px); top:49%}
+      .pos-3{left:clamp(16px,3vw,48px); top:69%}
+
+      .pos-4{right:clamp(24px,3.4vw,58px); top:39%}
+      .pos-5{right:clamp(24px,3.4vw,58px); top:62%}
+
+      .pos-4.hover,
+      .pos-5.hover{
+        transform:translateX(-8px) scale(1.04);
+      }
+    }
+
+    @media (orientation:portrait){
+      .topbar{
+        top:max(78px,calc(env(safe-area-inset-top) + 68px));
+        width:calc(100vw - 24px);
+        padding:12px 14px 14px;
+        border-radius:24px;
+      }
+
+      .question-text{
+        font-size:clamp(22px,6vw,34px);
+        line-height:1.16;
+      }
+
+      .timer-bar{
+        height:12px;
+        width:96%;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:29%;
+        bottom:4%;
+        border-radius:22px;
+      }
+
+      #answers::before{
+        left:8px;
+        width:38vw;
+      }
+
+      #answers::after{
+        right:8px;
+        width:38vw;
+      }
+
+      .answer-card{
+        width:38vw;
+        min-height:clamp(72px,11vh,94px);
+        font-size:clamp(22px,6.4vw,36px);
+        border-radius:20px;
+        padding:8px 8px;
+        overflow:hidden;
+      }
+
+      .pos-1{left:10px; top:32%}
+      .pos-2{left:10px; top:50%}
+      .pos-3{left:10px; top:68%}
+      .pos-4{right:10px; top:41%}
+      .pos-5{right:10px; top:62%}
+
+      .pos-4.hover,
+      .pos-5.hover{
+        transform:translateX(-5px) scale(1.035);
+      }
+
+      .chip{
+        font-size:clamp(16px,4.5vw,22px);
+        padding:8px 10px;
+        min-width:105px;
+      }
+    }
+
+    @media (max-height:620px) and (orientation:landscape){
+      .topbar{
+        top:max(58px,calc(env(safe-area-inset-top) + 50px));
+        padding:10px 18px 12px;
+      }
+
+      .question-text{
+        font-size:clamp(22px,3vw,38px);
+      }
+
+      .answer-card{
+        min-height:76px;
+        font-size:clamp(26px,3.6vw,44px);
+      }
+
+      #answers::before,
+      #answers::after{
+        top:25%;
+        bottom:3%;
+      }
+
+      .pos-1{top:28%}
+      .pos-2{top:48%}
+      .pos-3{top:68%}
+      .pos-4{top:38%}
+      .pos-5{top:61%}
+    }
+
   </style>
 </head>
 
@@ -570,6 +731,9 @@ let score = 0;
 let answers = [];
 let hands = null;
 let camera = null;
+let cameraStream = null;
+let cameraLoopStarted = false;
+let frameBusy = false;
 let playing = false;
 let answerLocked = false;
 let currentHoverKey = '';
@@ -692,30 +856,60 @@ async function startGame(){
 }
 
 async function setupCameraAndHands(){
-  if (hands && camera) return;
+  // สร้างระบบจับมือแค่ครั้งเดียว
+  if (!hands) {
+    hands = new Hands({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
 
-  hands = new Hands({
-    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-  });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.65,
+      minTrackingConfidence: 0.65
+    });
 
-  hands.setOptions({
-    maxNumHands: 2,
-    modelComplexity: 1,
-    minDetectionConfidence: 0.65,
-    minTrackingConfidence: 0.65
-  });
+    hands.onResults(onHandsResults);
+  }
 
-  hands.onResults(onHandsResults);
+  // ขออนุญาตกล้องแค่ครั้งแรก ถ้า stream ยังอยู่จะไม่ขอซ้ำ
+  const oldStream = el.video.srcObject;
+  const hasLiveStream = oldStream && oldStream.getVideoTracks &&
+    oldStream.getVideoTracks().some(track => track.readyState === 'live');
 
-  camera = new Camera(el.video, {
-    onFrame: async () => {
-      if (hands) await hands.send({ image: el.video });
-    },
-    width: 1280,
-    height: 720
-  });
+  if (!hasLiveStream) {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: 'user',
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
 
-  await camera.start();
+    el.video.srcObject = cameraStream;
+    await el.video.play();
+  }
+
+  // วนส่งภาพให้ MediaPipe แค่ loop เดียวตลอดหน้าเว็บ
+  if (!cameraLoopStarted) {
+    cameraLoopStarted = true;
+    requestAnimationFrame(processCameraFrame);
+  }
+}
+
+async function processCameraFrame(){
+  if (hands && el.video.readyState >= 2 && !frameBusy) {
+    frameBusy = true;
+    try {
+      await hands.send({ image: el.video });
+    } catch (err) {
+      console.warn('hand tracking frame error', err);
+    } finally {
+      frameBusy = false;
+    }
+  }
+  requestAnimationFrame(processCameraFrame);
 }
 
 function showQuestion(){
@@ -768,14 +962,17 @@ function onHandsResults(results){
 
   const points = getFingerPoints(results);
   if (!points.length) {
-    resetHover();
+    resetHover(true);
     return;
   }
 
+  // ใช้ปลายนิ้วชี้หลักเป็นตัวนำ และให้วงเหลืองตามนิ้วตลอดเวลา
+  const primaryPoint = points[0];
   const touched = findTouchedOption(points);
 
   if (!touched) {
-    resetHover();
+    resetHover(false);
+    drawCursor(primaryPoint, 0);
     return;
   }
 
@@ -789,7 +986,7 @@ function onHandsResults(results){
 
   const holdMs = Number(cfg('HOLD_MS', '800')) || 800;
   const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
-  drawCursor(touched.point, progress);
+  drawCursor(touched.point || primaryPoint, progress);
 
   if (progress >= 1) {
     chooseAnswer(touched.key);
@@ -841,16 +1038,20 @@ function findTouchedOption(points){
 }
 
 function drawCursor(point, progress){
+  const radius = 46;
+  const x = clamp(point.x, radius, window.innerWidth - radius);
+  const y = clamp(point.y, radius, window.innerHeight - radius);
+
   el.cursor.style.display = 'block';
-  el.cursor.style.left = `${point.x}px`;
-  el.cursor.style.top = `${point.y}px`;
+  el.cursor.style.left = `${x}px`;
+  el.cursor.style.top = `${y}px`;
   el.cursor.style.setProperty('--p', progress);
 }
 
-function resetHover(){
+function resetHover(hideCursor = true){
   currentHoverKey = '';
   holdStart = 0;
-  el.cursor.style.display = 'none';
+  if (hideCursor) el.cursor.style.display = 'none';
   document.querySelectorAll('.answer-card').forEach(c => c.classList.remove('hover'));
 }
 
