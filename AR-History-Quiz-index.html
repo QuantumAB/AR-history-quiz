@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>เกม AR ยุคหิน–ยุคโลหะ</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <style>
+    :root{
+      --wood-dark:#2a170d;
+      --wood:#5a351a;
+      --wood-2:#7b4f28;
+      --sand:#f5dfb8;
+      --sand-2:#fff4d8;
+      --gold:#f4c76c;
+      --bronze:#bf7b36;
+      --red:#b33a22;
+      --green:#2f8a4a;
+      --ink:#23150c;
+      --glass:rgba(255,244,216,.78);
+      --glass-dark:rgba(42,23,13,.78);
+      --shadow:0 18px 50px rgba(0,0,0,.34);
+      --radius:28px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+      background:radial-gradient(circle at top,#8a5b2f 0%,#4b2d17 40%,#1c1009 100%);
+      color:var(--sand-2);
+      touch-action:none;
+      user-select:none;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 22%,rgba(244,199,108,.20),transparent 24%),
+        radial-gradient(circle at 82% 22%,rgba(191,123,54,.18),transparent 25%),
+        linear-gradient(135deg,rgba(255,255,255,.07) 0 1px,transparent 1px 16px);
+      opacity:.65;
+      z-index:1;
+    }
+
+    #video{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transform:scaleX(-1);
+      z-index:0;
+      filter:saturate(1.05) contrast(1.02) brightness(.82);
+      background:#111;
+    }
+
+    #shade{
+      position:fixed;
+      inset:0;
+      z-index:2;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg,rgba(26,13,6,.52),rgba(26,13,6,.08) 24%,rgba(26,13,6,.08) 76%,rgba(26,13,6,.52)),
+        linear-gradient(180deg,rgba(26,13,6,.55),rgba(26,13,6,.06) 25%,rgba(26,13,6,.15) 72%,rgba(26,13,6,.60));
+    }
+
+    #app{
+      position:fixed;
+      inset:0;
+      z-index:3;
+      overflow:hidden;
+    }
+
+    .hidden{display:none!important}
+
+    .topbar{
+      position:absolute;
+      top:max(12px,env(safe-area-inset-top));
+      left:50%;
+      transform:translateX(-50%);
+      width:min(760px,76vw);
+      padding:10px 18px;
+      border-radius:999px;
+      background:linear-gradient(135deg,rgba(90,53,26,.90),rgba(42,23,13,.78));
+      border:2px solid rgba(244,199,108,.55);
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      text-align:center;
+    }
+
+    .question-text{
+      font-size:clamp(17px,2.2vw,30px);
+      font-weight:800;
+      line-height:1.25;
+      color:#fff3d0;
+      text-shadow:0 2px 12px rgba(0,0,0,.55);
+      white-space:pre-line;
+    }
+
+    .hud{
+      position:absolute;
+      top:max(12px,env(safe-area-inset-top));
+      left:max(12px,env(safe-area-inset-left));
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      z-index:10;
+    }
+
+    .hud-right{
+      position:absolute;
+      top:max(12px,env(safe-area-inset-top));
+      right:max(12px,env(safe-area-inset-right));
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      z-index:10;
+    }
+
+    .chip{
+      padding:9px 14px;
+      border-radius:999px;
+      background:rgba(42,23,13,.72);
+      border:1.5px solid rgba(244,199,108,.50);
+      box-shadow:0 10px 26px rgba(0,0,0,.25);
+      font-weight:800;
+      color:#fff3d0;
+      font-size:clamp(13px,1.4vw,17px);
+      backdrop-filter:blur(8px);
+    }
+
+    .sound-btn{
+      border:0;
+      cursor:pointer;
+      padding:9px 13px;
+      border-radius:999px;
+      background:#fff0c7;
+      color:#3a210f;
+      font-weight:900;
+      box-shadow:0 8px 22px rgba(0,0,0,.25);
+    }
+
+    .answer-card{
+      position:absolute;
+      z-index:8;
+      width:min(220px,27vw);
+      min-height:84px;
+      border:3px solid rgba(244,199,108,.68);
+      border-radius:var(--radius);
+      background:
+        radial-gradient(circle at 30% 20%,rgba(255,255,255,.20),transparent 28%),
+        linear-gradient(135deg,rgba(245,223,184,.96),rgba(196,142,74,.94));
+      color:var(--ink);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:12px 16px;
+      box-shadow:0 20px 48px rgba(0,0,0,.34), inset 0 0 0 2px rgba(255,255,255,.26);
+      font-size:clamp(24px,3.8vw,44px);
+      font-weight:1000;
+      line-height:1.05;
+      letter-spacing:-.02em;
+      transform-origin:center;
+      transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+    }
+
+    .answer-card::after{
+      content:attr(data-place);
+      position:absolute;
+      top:-13px;
+      left:50%;
+      transform:translateX(-50%);
+      padding:3px 10px;
+      border-radius:999px;
+      background:#5a351a;
+      color:#fff4d8;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid rgba(244,199,108,.70);
+      white-space:nowrap;
+    }
+
+    .answer-card.hover{
+      transform:scale(1.06);
+      filter:brightness(1.08);
+      box-shadow:0 24px 60px rgba(0,0,0,.42),0 0 0 8px rgba(244,199,108,.18), inset 0 0 0 2px rgba(255,255,255,.28);
+    }
+
+    .answer-card.correct{
+      background:linear-gradient(135deg,#f2ffdc,#74d18a);
+      border-color:#d8ff8d;
+    }
+
+    .answer-card.wrong{
+      background:linear-gradient(135deg,#ffe1d3,#e45b42);
+      border-color:#ffd0bf;
+    }
+
+    .pos-1{left:clamp(14px,5vw,70px); top:20%}
+    .pos-2{left:clamp(14px,5vw,70px); top:55%}
+    .pos-3{right:clamp(14px,5vw,70px); top:20%}
+    .pos-4{right:clamp(14px,5vw,70px); top:55%}
+    .pos-5{left:50%; bottom:max(16px,env(safe-area-inset-bottom)); transform:translateX(-50%)}
+    .pos-5.hover{transform:translateX(-50%) scale(1.06)}
+
+    #cursor{
+      position:absolute;
+      z-index:20;
+      width:72px;
+      height:72px;
+      margin-left:-36px;
+      margin-top:-36px;
+      border-radius:50%;
+      pointer-events:none;
+      display:none;
+      background:conic-gradient(var(--gold) calc(var(--p,0)*1turn),rgba(255,255,255,.22) 0);
+      box-shadow:0 0 0 6px rgba(42,23,13,.36),0 0 28px rgba(244,199,108,.55);
+    }
+    #cursor::before{
+      content:"";
+      position:absolute;
+      inset:10px;
+      border-radius:50%;
+      background:rgba(42,23,13,.82);
+      border:2px solid rgba(255,244,216,.75);
+    }
+    #cursor::after{
+      content:"✋";
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:25px;
+    }
+
+    .center-card{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(620px,86vw);
+      max-height:88vh;
+      overflow:auto;
+      border-radius:36px;
+      padding:28px;
+      text-align:center;
+      background:
+        radial-gradient(circle at top,rgba(255,244,216,.18),transparent 30%),
+        linear-gradient(135deg,rgba(90,53,26,.94),rgba(42,23,13,.92));
+      border:3px solid rgba(244,199,108,.70);
+      box-shadow:var(--shadow);
+      z-index:30;
+      backdrop-filter:blur(10px);
+    }
+
+    .title{
+      margin:0 0 8px;
+      font-size:clamp(30px,5vw,58px);
+      line-height:1.05;
+      font-weight:1000;
+      color:#fff0c7;
+      text-shadow:0 3px 0 rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.45);
+    }
+
+    .subtitle{
+      margin:0 auto 16px;
+      font-size:clamp(17px,2.4vw,25px);
+      line-height:1.45;
+      color:#ffdf9a;
+      font-weight:800;
+      white-space:pre-line;
+    }
+
+    .topic{
+      margin:12px auto 18px;
+      padding:12px 14px;
+      border-radius:22px;
+      background:rgba(255,244,216,.12);
+      border:1px solid rgba(244,199,108,.34);
+      color:#fff5db;
+      font-weight:800;
+      line-height:1.45;
+      white-space:pre-line;
+    }
+
+    .name-input{
+      width:min(420px,90%);
+      margin:5px auto 15px;
+      padding:14px 18px;
+      border:2px solid rgba(244,199,108,.56);
+      border-radius:18px;
+      outline:none;
+      font-size:18px;
+      font-family:inherit;
+      font-weight:800;
+      color:#2a170d;
+      background:#fff8e8;
+      text-align:center;
+    }
+
+    .main-btn{
+      border:0;
+      cursor:pointer;
+      padding:15px 26px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#ffd87d,#b96b27);
+      color:#2a170d;
+      font-size:clamp(18px,2.6vw,26px);
+      font-weight:1000;
+      font-family:inherit;
+      box-shadow:0 14px 34px rgba(0,0,0,.30), inset 0 0 0 2px rgba(255,255,255,.25);
+    }
+
+    .main-btn:active{transform:translateY(1px)}
+
+    .small-note{
+      margin-top:14px;
+      color:#ffe6aa;
+      font-size:14px;
+      line-height:1.45;
+      opacity:.95;
+    }
+
+    #feedback{
+      position:absolute;
+      left:50%;
+      top:58%;
+      transform:translate(-50%,-50%) scale(.92);
+      z-index:25;
+      padding:18px 28px;
+      border-radius:999px;
+      background:rgba(42,23,13,.84);
+      border:2px solid rgba(244,199,108,.7);
+      color:#fff3d0;
+      font-size:clamp(28px,5vw,58px);
+      font-weight:1000;
+      box-shadow:var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      text-align:center;
+      white-space:pre-line;
+    }
+
+    #feedback.show{
+      opacity:1;
+      transform:translate(-50%,-50%) scale(1);
+    }
+
+    .result-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
+      overflow:hidden;
+      border-radius:18px;
+      color:#fff7e6;
+      font-size:14px;
+    }
+    .result-table th,.result-table td{
+      padding:8px 10px;
+      border-bottom:1px solid rgba(255,244,216,.16);
+      text-align:left;
+    }
+    .result-table th{color:#ffd87d}
+    .result-table td:last-child{text-align:center;font-weight:900}
+
+    @media (orientation:portrait){
+      .topbar{width:78vw;padding:8px 12px}
+      .question-text{font-size:clamp(15px,4vw,22px)}
+      .answer-card{
+        width:33vw;
+        min-height:72px;
+        border-radius:22px;
+        font-size:clamp(20px,6vw,34px);
+        padding:10px;
+      }
+      .pos-1{left:10px; top:24%}
+      .pos-2{left:10px; top:55%}
+      .pos-3{right:10px; top:24%}
+      .pos-4{right:10px; top:55%}
+      .pos-5{bottom:7%}
+      .hud,.hud-right{top:max(8px,env(safe-area-inset-top))}
+      .chip{font-size:12px;padding:7px 10px}
+    }
+  </style>
+</head>
+
+<body>
+  <video id="video" playsinline muted></video>
+  <div id="shade"></div>
+
+  <div id="app">
+    <div id="startScreen" class="center-card">
+      <h1 id="startTitle" class="title">เกม AR ยุคหิน–ยุคโลหะ</h1>
+      <div id="startSubtitle" class="subtitle">แตะคำตอบด้วยมือให้ถูกยุค</div>
+      <div id="topicText" class="topic">หินเก่า / หินกลาง / หินใหม่ / สำริด / เหล็ก</div>
+      <input id="playerName" class="name-input hidden" type="text" autocomplete="off" placeholder="ชื่อผู้เล่น / ห้องเรียน (ไม่ใส่ก็ได้)">
+      <button id="startBtn" class="main-btn">เริ่มเกม</button>
+      <div id="startNote" class="small-note">แนะนำให้เปิดแนวนอน และอนุญาตการใช้กล้อง<br>ยกมือไปแตะคำตอบ แล้วแช่ไว้ประมาณ 1 วินาที</div>
+    </div>
+
+    <div id="loadingScreen" class="center-card hidden">
+      <h2 id="loadingText" class="title" style="font-size:clamp(26px,4vw,46px)">กำลังโหลด...</h2>
+      <div class="subtitle">เตรียมคำถามและระบบจับมือ</div>
+    </div>
+
+    <div id="gameScreen" class="hidden">
+      <div class="hud">
+        <div id="scoreChip" class="chip">คะแนน 0</div>
+        <div id="roundChip" class="chip">ข้อ 1/15</div>
+      </div>
+
+      <div class="topbar">
+        <div id="questionText" class="question-text">คำถาม</div>
+      </div>
+
+      <div class="hud-right">
+        <div id="timerChip" class="chip">เวลา 12</div>
+        <button id="soundBtn" class="sound-btn" type="button">🔊</button>
+      </div>
+
+      <div id="answers">
+        <div class="answer-card pos-1" data-key="หินเก่า" data-place="ซ้ายบน">หินเก่า</div>
+        <div class="answer-card pos-2" data-key="หินกลาง" data-place="ซ้ายล่าง">หินกลาง</div>
+        <div class="answer-card pos-3" data-key="หินใหม่" data-place="ขวาบน">หินใหม่</div>
+        <div class="answer-card pos-4" data-key="สำริด" data-place="ขวาล่าง">สำริด</div>
+        <div class="answer-card pos-5" data-key="เหล็ก" data-place="ล่างกลาง">เหล็ก</div>
+      </div>
+
+      <div id="cursor"></div>
+      <div id="feedback"></div>
+    </div>
+
+    <div id="resultScreen" class="center-card hidden">
+      <h2 id="finishTitle" class="title">จบเกม</h2>
+      <div id="finalScore" class="subtitle">คะแนน 0/0</div>
+      <button id="playAgainBtn" class="main-btn">เล่นอีกครั้ง</button>
+      <div id="resultDetail"></div>
+    </div>
+  </div>
+
+<script>
+/* =======================================================
+   สำคัญ: หลัง Deploy Apps Script แล้ว เอาลิงก์ /exec มาใส่ตรงนี้
+   ตัวอย่าง:
+   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxxxxxxx/exec';
+======================================================= */
+const GAS_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+const DEFAULT_OPTIONS = ['หินเก่า', 'หินกลาง', 'หินใหม่', 'สำริด', 'เหล็ก'];
+
+const el = {
+  video: document.getElementById('video'),
+  startScreen: document.getElementById('startScreen'),
+  loadingScreen: document.getElementById('loadingScreen'),
+  gameScreen: document.getElementById('gameScreen'),
+  resultScreen: document.getElementById('resultScreen'),
+  startTitle: document.getElementById('startTitle'),
+  startSubtitle: document.getElementById('startSubtitle'),
+  topicText: document.getElementById('topicText'),
+  playerName: document.getElementById('playerName'),
+  startBtn: document.getElementById('startBtn'),
+  playAgainBtn: document.getElementById('playAgainBtn'),
+  loadingText: document.getElementById('loadingText'),
+  questionText: document.getElementById('questionText'),
+  scoreChip: document.getElementById('scoreChip'),
+  roundChip: document.getElementById('roundChip'),
+  timerChip: document.getElementById('timerChip'),
+  soundBtn: document.getElementById('soundBtn'),
+  feedback: document.getElementById('feedback'),
+  cursor: document.getElementById('cursor'),
+  finishTitle: document.getElementById('finishTitle'),
+  finalScore: document.getElementById('finalScore'),
+  resultDetail: document.getElementById('resultDetail')
+};
+
+let config = {};
+let questionBank = [];
+let roundQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let answers = [];
+let hands = null;
+let camera = null;
+let playing = false;
+let answerLocked = false;
+let currentHoverKey = '';
+let holdStart = 0;
+let questionDeadline = 0;
+let timerLoop = null;
+let audio = null;
+let muted = false;
+
+document.addEventListener('DOMContentLoaded', init);
+
+async function init(){
+  bindEvents();
+  await loadGameData();
+  applyConfigToStartScreen();
+}
+
+function bindEvents(){
+  el.startBtn.addEventListener('click', startGame);
+  el.playAgainBtn.addEventListener('click', startGame);
+  el.soundBtn.addEventListener('click', () => {
+    muted = !muted;
+    el.soundBtn.textContent = muted ? '🔇' : '🔊';
+    if (audio) audio.setMuted(muted);
+  });
+}
+
+async function loadGameData(){
+  showOnly('loading');
+  el.loadingText.textContent = 'กำลังโหลด...';
+
+  try{
+    if (!GAS_URL || GAS_URL.includes('PASTE_YOUR_APPS_SCRIPT')) {
+      throw new Error('ยังไม่ได้ใส่ GAS_URL ใน index.html');
+    }
+
+    const data = await gasJsonp('getGameData');
+    if (!data || !data.success) {
+      throw new Error(data && data.message ? data.message : 'โหลดข้อมูลไม่สำเร็จ');
+    }
+
+    config = normalizeConfig(data.config || {});
+    questionBank = Array.isArray(data.questions) ? data.questions : [];
+
+    if (!questionBank.length) {
+      throw new Error('ไม่พบคำถามในชีต QUESTIONS');
+    }
+
+    showOnly('start');
+
+  }catch(err){
+    console.error(err);
+    showOnly('start');
+    el.startTitle.textContent = 'ตั้งค่ายังไม่ครบ';
+    el.startSubtitle.textContent = err.message || 'โหลดข้อมูลไม่สำเร็จ';
+    el.topicText.textContent = 'ให้ Deploy Apps Script แล้วนำลิงก์ /exec มาใส่ในตัวแปร GAS_URL';
+    el.startBtn.textContent = 'ลองโหลดใหม่';
+    el.startBtn.onclick = () => location.reload();
+  }
+}
+
+function normalizeConfig(raw){
+  const c = {};
+  Object.keys(raw || {}).forEach(k => c[k] = String(raw[k] ?? '').trim());
+  return c;
+}
+
+function applyConfigToStartScreen(){
+  el.startTitle.textContent = cfg('APP_TITLE', 'เกม AR ยุคหิน–ยุคโลหะ');
+  el.startSubtitle.textContent = cfg('APP_SUBTITLE', 'แตะคำตอบด้วยมือให้ถูกยุค');
+  el.topicText.textContent = cfg('GAME_TOPIC_TEXT', 'หินเก่า / หินกลาง / หินใหม่ / สำริด / เหล็ก');
+  el.startBtn.textContent = cfg('START_BUTTON_TEXT', 'เริ่มเกม');
+  el.playerName.placeholder = cfg('PLAYER_NAME_PLACEHOLDER', 'ชื่อผู้เล่น / ห้องเรียน (ไม่ใส่ก็ได้)');
+
+  if (boolCfg('SHOW_PLAYER_NAME_INPUT', false)) {
+    el.playerName.classList.remove('hidden');
+  } else {
+    el.playerName.classList.add('hidden');
+  }
+
+  const optionTexts = getOptionTexts();
+  document.querySelectorAll('.answer-card').forEach((card, i) => {
+    card.dataset.key = optionTexts[i];
+    card.textContent = optionTexts[i];
+  });
+}
+
+async function startGame(){
+  showOnly('loading');
+  el.loadingText.textContent = cfg('LOADING_CAMERA_TEXT', 'กำลังเปิดกล้อง...');
+
+  audio = audio || new GameAudio();
+  audio.setMuted(muted);
+  await audio.unlock();
+
+  try{
+    await setupCameraAndHands();
+  }catch(err){
+    console.error(err);
+    alert(cfg('CAMERA_ERROR_TEXT', 'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง หรือเปิดผ่าน HTTPS เช่น GitHub Pages'));
+    showOnly('start');
+    return;
+  }
+
+  const total = clamp(parseInt(cfg('TOTAL_QUESTIONS', '15'), 10) || 15, 1, questionBank.length);
+  roundQuestions = shuffle(questionBank.slice()).slice(0, total);
+  currentIndex = 0;
+  score = 0;
+  answers = [];
+  playing = true;
+  answerLocked = false;
+  currentHoverKey = '';
+  holdStart = 0;
+
+  showOnly('game');
+  startBgm();
+  showQuestion();
+}
+
+async function setupCameraAndHands(){
+  if (hands && camera) return;
+
+  hands = new Hands({
+    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
+
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.65,
+    minTrackingConfidence: 0.65
+  });
+
+  hands.onResults(onHandsResults);
+
+  camera = new Camera(el.video, {
+    onFrame: async () => {
+      if (hands) await hands.send({ image: el.video });
+    },
+    width: 1280,
+    height: 720
+  });
+
+  await camera.start();
+}
+
+function showQuestion(){
+  clearCardClasses();
+  hideFeedback();
+  answerLocked = false;
+  currentHoverKey = '';
+  holdStart = 0;
+  el.cursor.style.display = 'none';
+
+  const q = roundQuestions[currentIndex];
+  el.questionText.textContent = q.question;
+  el.scoreChip.textContent = `คะแนน ${score}`;
+  el.roundChip.textContent = `ข้อ ${currentIndex + 1}/${roundQuestions.length}`;
+
+  const sec = Number(q.timeSec || 0) || Number(cfg('QUESTION_TIME_SEC', '12')) || 12;
+  questionDeadline = Date.now() + sec * 1000;
+
+  if (timerLoop) clearInterval(timerLoop);
+  timerLoop = setInterval(updateTimer, 100);
+  updateTimer();
+}
+
+function updateTimer(){
+  if (!playing || answerLocked) return;
+
+  const remain = Math.max(0, Math.ceil((questionDeadline - Date.now()) / 1000));
+  el.timerChip.textContent = `เวลา ${remain}`;
+
+  if (remain <= 3 && remain > 0) playSfx('tick');
+
+  if (remain <= 0) {
+    clearInterval(timerLoop);
+    chooseAnswer('__TIMEOUT__');
+  }
+}
+
+function onHandsResults(results){
+  if (!playing || answerLocked) {
+    el.cursor.style.display = 'none';
+    return;
+  }
+
+  const points = getFingerPoints(results);
+  if (!points.length) {
+    resetHover();
+    return;
+  }
+
+  const touched = findTouchedOption(points);
+
+  if (!touched) {
+    resetHover();
+    return;
+  }
+
+  document.querySelectorAll('.answer-card').forEach(c => c.classList.toggle('hover', c.dataset.key === touched.key));
+
+  if (currentHoverKey !== touched.key) {
+    currentHoverKey = touched.key;
+    holdStart = Date.now();
+    playSfx('hover');
+  }
+
+  const holdMs = Number(cfg('HOLD_MS', '800')) || 800;
+  const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
+  drawCursor(touched.point, progress);
+
+  if (progress >= 1) {
+    chooseAnswer(touched.key);
+  }
+}
+
+function getFingerPoints(results){
+  const points = [];
+  const landmarks = results && results.multiHandLandmarks ? results.multiHandLandmarks : [];
+  landmarks.forEach(lm => {
+    const p = lm[8]; // index fingertip
+    if (!p) return;
+    points.push({
+      x: (1 - p.x) * window.innerWidth,
+      y: p.y * window.innerHeight
+    });
+  });
+  return points;
+}
+
+function findTouchedOption(points){
+  const padding = Number(cfg('HIT_PADDING', '30')) || 30;
+  let best = null;
+
+  document.querySelectorAll('.answer-card').forEach(card => {
+    const r = card.getBoundingClientRect();
+    const box = {
+      left: r.left - padding,
+      right: r.right + padding,
+      top: r.top - padding,
+      bottom: r.bottom + padding,
+      cx: r.left + r.width / 2,
+      cy: r.top + r.height / 2
+    };
+
+    points.forEach(p => {
+      if (p.x >= box.left && p.x <= box.right && p.y >= box.top && p.y <= box.bottom) {
+        const d = Math.hypot(p.x - box.cx, p.y - box.cy);
+        if (!best || d < best.d) {
+          best = { key: card.dataset.key, card, point: p, d };
+        }
+      }
+    });
+  });
+
+  return best;
+}
+
+function drawCursor(point, progress){
+  el.cursor.style.display = 'block';
+  el.cursor.style.left = `${point.x}px`;
+  el.cursor.style.top = `${point.y}px`;
+  el.cursor.style.setProperty('--p', progress);
+}
+
+function resetHover(){
+  currentHoverKey = '';
+  holdStart = 0;
+  el.cursor.style.display = 'none';
+  document.querySelectorAll('.answer-card').forEach(c => c.classList.remove('hover'));
+}
+
+function chooseAnswer(selectedKey){
+  if (answerLocked) return;
+
+  answerLocked = true;
+  clearInterval(timerLoop);
+  el.cursor.style.display = 'none';
+
+  const q = roundQuestions[currentIndex];
+  const correctKey = String(q.correct || '').trim();
+  const isTimeout = selectedKey === '__TIMEOUT__';
+  const isCorrect = !isTimeout && selectedKey === correctKey;
+
+  if (isCorrect) score++;
+
+  answers.push({
+    id: q.id,
+    question: q.question,
+    correct: correctKey,
+    selected: isTimeout ? 'หมดเวลา' : selectedKey,
+    ok: isCorrect
+  });
+
+  markAnswerCards(correctKey, selectedKey, isCorrect);
+  showFeedbackMessage(isTimeout, isCorrect, q);
+  playSfx(isCorrect ? 'correct' : 'wrong');
+
+  setTimeout(() => {
+    currentIndex++;
+    if (currentIndex >= roundQuestions.length) {
+      finishGame();
+    } else {
+      showQuestion();
+    }
+  }, boolCfg('SHOW_EXPLANATION', false) ? 1600 : 950);
+}
+
+function markAnswerCards(correctKey, selectedKey, isCorrect){
+  document.querySelectorAll('.answer-card').forEach(card => {
+    const key = card.dataset.key;
+    if (key === correctKey) card.classList.add('correct');
+    if (key === selectedKey && !isCorrect) card.classList.add('wrong');
+  });
+}
+
+function showFeedbackMessage(isTimeout, isCorrect, q){
+  let msg;
+  if (isTimeout) {
+    msg = cfg('TIMEOUT_TEXT', 'หมดเวลา!');
+  } else {
+    msg = isCorrect ? cfg('CORRECT_TEXT', 'ถูกต้อง!') : cfg('WRONG_TEXT', 'ยังไม่ถูก');
+  }
+
+  if (boolCfg('SHOW_EXPLANATION', false) && q.explanation) {
+    msg += '\n' + q.explanation;
+  }
+
+  el.feedback.textContent = msg;
+  el.feedback.classList.add('show');
+}
+
+function hideFeedback(){
+  el.feedback.classList.remove('show');
+}
+
+function clearCardClasses(){
+  document.querySelectorAll('.answer-card').forEach(c => c.classList.remove('hover','correct','wrong'));
+}
+
+function finishGame(){
+  playing = false;
+  stopBgm();
+  playSfx('finish');
+
+  showOnly('result');
+
+  const percent = roundQuestions.length ? Math.round((score / roundQuestions.length) * 100) : 0;
+  el.finishTitle.textContent = cfg('FINISH_TEXT', 'จบเกม');
+  el.finalScore.textContent = `คะแนน ${score}/${roundQuestions.length} (${percent}%)`;
+
+  el.resultDetail.innerHTML = buildResultTable();
+  saveScore();
+}
+
+function buildResultTable(){
+  const rows = answers.map((a, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${escapeHtml(a.correct)}</td>
+      <td>${escapeHtml(a.selected)}</td>
+      <td>${a.ok ? '✅' : '❌'}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <table class="result-table">
+      <thead>
+        <tr><th>ข้อ</th><th>เฉลย</th><th>ตอบ</th><th>ผล</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function saveScore(){
+  if (!GAS_URL || GAS_URL.includes('PASTE_YOUR_APPS_SCRIPT')) return;
+
+  const playerName = boolCfg('SHOW_PLAYER_NAME_INPUT', false) ? el.playerName.value.trim() : '';
+  const detail = JSON.stringify(answers);
+
+  gasJsonp('saveScore', {
+    playerName,
+    score,
+    total: roundQuestions.length,
+    detail
+  }).catch(err => console.warn('saveScore failed', err));
+}
+
+function showOnly(name){
+  el.startScreen.classList.toggle('hidden', name !== 'start');
+  el.loadingScreen.classList.toggle('hidden', name !== 'loading');
+  el.gameScreen.classList.toggle('hidden', name !== 'game');
+  el.resultScreen.classList.toggle('hidden', name !== 'result');
+}
+
+function getOptionTexts(){
+  return [
+    cfg('OPTION_1_TEXT', DEFAULT_OPTIONS[0]),
+    cfg('OPTION_2_TEXT', DEFAULT_OPTIONS[1]),
+    cfg('OPTION_3_TEXT', DEFAULT_OPTIONS[2]),
+    cfg('OPTION_4_TEXT', DEFAULT_OPTIONS[3]),
+    cfg('OPTION_5_TEXT', DEFAULT_OPTIONS[4])
+  ];
+}
+
+function cfg(key, fallback){
+  const v = config[key];
+  return v === undefined || v === null || String(v).trim() === '' ? fallback : String(v);
+}
+
+function boolCfg(key, fallback){
+  const v = cfg(key, fallback ? 'TRUE' : 'FALSE').toLowerCase();
+  return ['true','1','yes','y','เปิด','ใช่'].includes(v);
+}
+
+function clamp(n, min, max){
+  return Math.min(max, Math.max(min, n));
+}
+
+function shuffle(arr){
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[ch]));
+}
+
+function gasJsonp(action, params = {}){
+  return new Promise((resolve, reject) => {
+    const callback = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    const url = new URL(GAS_URL);
+    url.searchParams.set('action', action);
+    url.searchParams.set('callback', callback);
+
+    Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ'));
+    }, 20000);
+
+    window[callback] = data => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('โหลดข้อมูลจาก Apps Script ไม่ได้'));
+    };
+
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[callback];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    script.src = url.toString();
+    document.body.appendChild(script);
+  });
+}
+
+/* =========================
+   เสียงประกอบ / เอฟเฟกต์
+   สร้างจาก Web Audio API ไม่ต้องมีไฟล์เสียง
+========================= */
+class GameAudio{
+  constructor(){
+    this.ctx = null;
+    this.master = null;
+    this.bgmTimer = null;
+    this.step = 0;
+    this.muted = false;
+  }
+
+  async unlock(){
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = Number(cfg('SOUND_VOLUME', '0.65')) || 0.65;
+      this.master.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === 'suspended') await this.ctx.resume();
+  }
+
+  setMuted(v){
+    this.muted = v;
+    if (this.master) this.master.gain.value = v ? 0 : (Number(cfg('SOUND_VOLUME', '0.65')) || 0.65);
+  }
+
+  tone(freq, dur = .12, type = 'sine', gain = .12, when = 0){
+    if (!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime + when;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g);
+    g.connect(this.master);
+    osc.start(t);
+    osc.stop(t + dur + .03);
+  }
+
+  noise(dur = .06, gain = .09){
+    if (!this.ctx || this.muted) return;
+    const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * dur, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = this.ctx.createBufferSource();
+    const g = this.ctx.createGain();
+    g.gain.value = gain;
+    source.buffer = buffer;
+    source.connect(g);
+    g.connect(this.master);
+    source.start();
+  }
+
+  sfx(name){
+    if (!boolCfg('SFX_ENABLED', true) || this.muted) return;
+    if (!this.ctx) return;
+
+    if (name === 'hover') {
+      this.tone(660, .035, 'triangle', .035);
+    } else if (name === 'correct') {
+      this.tone(523, .08, 'triangle', .12, 0);
+      this.tone(659, .08, 'triangle', .12, .08);
+      this.tone(784, .12, 'triangle', .12, .16);
+      this.noise(.05, .03);
+    } else if (name === 'wrong') {
+      this.tone(220, .12, 'sawtooth', .10, 0);
+      this.tone(146, .18, 'sawtooth', .10, .10);
+    } else if (name === 'tick') {
+      this.tone(900, .025, 'square', .035);
+    } else if (name === 'finish') {
+      this.tone(392, .10, 'triangle', .10, 0);
+      this.tone(523, .10, 'triangle', .10, .10);
+      this.tone(659, .10, 'triangle', .10, .20);
+      this.tone(784, .20, 'triangle', .10, .30);
+    }
+  }
+
+  startBgm(){
+    if (!boolCfg('BGM_ENABLED', true) || this.muted || !this.ctx || this.bgmTimer) return;
+    const bass = [110, 0, 110, 146, 0, 165, 146, 0];
+    this.step = 0;
+
+    this.bgmTimer = setInterval(() => {
+      if (!playing || this.muted) return;
+      const i = this.step % bass.length;
+      const b = bass[i];
+
+      if (b) this.tone(b, .09, 'sawtooth', .055);
+      if (i % 4 === 0) {
+        this.tone(70, .07, 'sine', .09);
+      }
+      if (i === 2 || i === 6) {
+        this.noise(.035, .035);
+      }
+
+      this.step++;
+    }, 150);
+  }
+
+  stopBgm(){
+    if (this.bgmTimer) clearInterval(this.bgmTimer);
+    this.bgmTimer = null;
+  }
+}
+
+function startBgm(){
+  if (audio) audio.startBgm();
+}
+
+function stopBgm(){
+  if (audio) audio.stopBgm();
+}
+
+function playSfx(name){
+  if (audio) audio.sfx(name);
+}
+</script>
+</body>
+</html>
