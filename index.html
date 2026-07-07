@@ -1105,6 +1105,12 @@
       transition:stroke-dashoffset .035s linear!important;
     }
 
+
+    /* V11: ให้ JS ทับค่าเส้นโหลดได้จริง */
+    .hold-ring-line{
+      transition:stroke-dashoffset .04s linear!important;
+    }
+
   </style>
 </head>
 
@@ -1803,20 +1809,22 @@ function setAnswerCardContent(card, text){
 function setHoldProgress(card, progress){
   const p = clamp(Number(progress) || 0, 0, 1);
   card.style.setProperty('--hold', p);
+
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    // pathLength = 100, เริ่มจากล่างซ้าย แล้วลด dashoffset จนครบ 1 รอบ
-    line.style.strokeDasharray = '100';
-    line.style.strokeDashoffset = String(100 - (p * 100));
+    // CSS มี !important จึงต้อง setProperty พร้อม important ไม่งั้นเส้นจะไม่วิ่ง
+    line.style.setProperty('stroke-dasharray', '100', 'important');
+    line.style.setProperty('stroke-dashoffset', String(100 - (p * 100)), 'important');
   }
 }
 
 function clearHoldProgress(card){
   card.style.removeProperty('--hold');
+
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    line.style.strokeDasharray = '100';
-    line.style.strokeDashoffset = '100';
+    line.style.setProperty('stroke-dasharray', '100', 'important');
+    line.style.setProperty('stroke-dashoffset', '100', 'important');
   }
 }
 
