@@ -858,6 +858,228 @@
       }
     }
 
+
+    /* ===============================
+       V9 FINAL LAYOUT + TRUE BORDER PROGRESS
+       - โหลดสีฟ้าหมุนตามกรอบโค้งของคำตอบจริง
+       - กล่องครอบซ้าย/ขวากึ่งกลางกับคำตอบ
+       - ใช้ CSS Grid แทน absolute top/left เพื่อลดการหลุดขอบ
+    =============================== */
+
+    /* ปิด progress แบบ pseudo/conic เดิมทุกตัว */
+    .answer-card::before{
+      content:none!important;
+      display:none!important;
+    }
+
+    #answers{
+      position:absolute!important;
+      inset:0!important;
+      z-index:7!important;
+      display:grid!important;
+      grid-template-columns:clamp(150px,24vw,310px) 1fr clamp(150px,24vw,310px)!important;
+      grid-template-rows:22vh repeat(3, minmax(0, 1fr)) 4vh!important;
+      column-gap:clamp(14px,3vw,48px)!important;
+      padding:0 clamp(14px,3vw,54px)!important;
+      pointer-events:none!important;
+    }
+
+    #answers::before,
+    #answers::after{
+      content:""!important;
+      position:absolute!important;
+      top:22vh!important;
+      bottom:4vh!important;
+      width:clamp(150px,24vw,310px)!important;
+      border-radius:32px!important;
+      background:linear-gradient(180deg,rgba(255,244,216,.12),rgba(90,53,26,.12))!important;
+      border:1.5px solid rgba(244,199,108,.22)!important;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)!important;
+      pointer-events:none!important;
+    }
+
+    #answers::before{
+      left:clamp(14px,3vw,54px)!important;
+    }
+
+    #answers::after{
+      right:clamp(14px,3vw,54px)!important;
+    }
+
+    .answer-card{
+      position:relative!important;
+      left:auto!important;
+      right:auto!important;
+      top:auto!important;
+      bottom:auto!important;
+      justify-self:center!important;
+      align-self:center!important;
+      width:clamp(126px,20vh,184px)!important;
+      height:clamp(126px,20vh,184px)!important;
+      min-height:0!important;
+      aspect-ratio:1/1!important;
+      border-radius:26px!important;
+      overflow:visible!important;
+      padding:10px!important;
+      font-size:clamp(27px,4vw,54px)!important;
+      transform:none!important;
+      isolation:isolate!important;
+    }
+
+    .answer-label{
+      position:relative;
+      z-index:3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:100%;
+      text-align:center;
+      line-height:1.02;
+      white-space:pre-line;
+    }
+
+    .pos-1{grid-column:1!important;grid-row:2!important;}
+    .pos-2{grid-column:1!important;grid-row:3!important;}
+    .pos-3{grid-column:1!important;grid-row:4!important;}
+
+    .pos-4{grid-column:3!important;grid-row:2 / span 2!important;}
+    .pos-5{grid-column:3!important;grid-row:3 / span 2!important;}
+
+    .answer-card.hover{
+      transform:scale(1.035)!important;
+      filter:brightness(1.08);
+    }
+
+    .pos-4.hover,
+    .pos-5.hover{
+      transform:scale(1.035)!important;
+    }
+
+    .hold-ring{
+      position:absolute;
+      inset:-10px;
+      width:calc(100% + 20px);
+      height:calc(100% + 20px);
+      overflow:visible;
+      z-index:4;
+      pointer-events:none;
+      opacity:0;
+      filter:drop-shadow(0 0 10px rgba(20, 200, 255, .78));
+      transform:rotate(0deg);
+    }
+
+    .answer-card.hover .hold-ring{
+      opacity:1;
+    }
+
+    .hold-ring-bg,
+    .hold-ring-line{
+      fill:none;
+      vector-effect:non-scaling-stroke;
+    }
+
+    .hold-ring-bg{
+      stroke:rgba(255,255,255,.26);
+      stroke-width:5;
+    }
+
+    .hold-ring-line{
+      stroke:#13d8ff;
+      stroke-width:7;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:1;
+      stroke-dashoffset:1;
+      transition:stroke-dashoffset .045s linear;
+    }
+
+    .answer-card.correct .hold-ring,
+    .answer-card.wrong .hold-ring{
+      opacity:0!important;
+    }
+
+    @media (orientation:landscape){
+      .topbar{
+        top:max(44px,calc(env(safe-area-inset-top) + 38px))!important;
+        width:clamp(380px,52vw,760px)!important;
+        max-width:calc(100vw - 400px)!important;
+        padding:10px 18px 12px!important;
+        border-radius:28px!important;
+      }
+
+      .question-text{
+        font-size:clamp(25px,3.25vw,48px)!important;
+        line-height:1.12!important;
+      }
+
+      .timer-bar{
+        height:12px!important;
+      }
+    }
+
+    @media (orientation:portrait){
+      #answers{
+        grid-template-columns:42vw 1fr 42vw!important;
+        grid-template-rows:25vh repeat(3, minmax(0, 1fr)) 4vh!important;
+        column-gap:0!important;
+        padding:0 8px!important;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:25vh!important;
+        bottom:4vh!important;
+        width:42vw!important;
+        border-radius:24px!important;
+      }
+
+      #answers::before{left:8px!important;}
+      #answers::after{right:8px!important;}
+
+      .answer-card{
+        width:min(34vw,132px)!important;
+        height:min(34vw,132px)!important;
+        border-radius:20px!important;
+        font-size:clamp(21px,6vw,34px)!important;
+      }
+
+      .hold-ring{
+        inset:-8px;
+        width:calc(100% + 16px);
+        height:calc(100% + 16px);
+      }
+
+      .topbar{
+        top:max(64px,calc(env(safe-area-inset-top) + 56px))!important;
+        width:calc(100vw - 18px)!important;
+        padding:10px 12px 12px!important;
+      }
+    }
+
+    @media (max-height:620px) and (orientation:landscape){
+      #answers{
+        grid-template-rows:21vh repeat(3, minmax(0, 1fr)) 3vh!important;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:21vh!important;
+        bottom:3vh!important;
+      }
+
+      .answer-card{
+        width:clamp(104px,19vh,138px)!important;
+        height:clamp(104px,19vh,138px)!important;
+        border-radius:20px!important;
+        font-size:clamp(22px,3.6vw,42px)!important;
+      }
+
+      .topbar{
+        top:max(36px,calc(env(safe-area-inset-top) + 30px))!important;
+      }
+    }
+
   </style>
 </head>
 
@@ -1058,7 +1280,7 @@ function applyConfigToStartScreen(){
   const optionTexts = getOptionTexts();
   document.querySelectorAll('.answer-card').forEach((card, i) => {
     card.dataset.key = optionTexts[i];
-    card.textContent = optionTexts[i];
+    setAnswerCardContent(card, optionTexts[i]);
   });
 }
 
@@ -1218,7 +1440,7 @@ function onHandsResults(results){
   document.querySelectorAll('.answer-card').forEach(c => c.classList.toggle('hover', c.dataset.key === touched.key));
 
   if (currentHoverKey !== touched.key) {
-    document.querySelectorAll('.answer-card').forEach(c => c.style.removeProperty('--hold'));
+    document.querySelectorAll('.answer-card').forEach(c => clearHoldProgress(c));
     currentHoverKey = touched.key;
     holdStart = Date.now();
     playSfx('hover');
@@ -1228,7 +1450,7 @@ function onHandsResults(results){
   const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
 
   // แสดงความคืบหน้าการแช่เป็นเส้นสีฟ้าวิ่งรอบคำตอบ
-  if (touched.card) touched.card.style.setProperty('--hold', progress);
+  if (touched.card) setHoldProgress(touched.card, progress);
 
   if (progress >= 1) {
     chooseAnswer(touched.key);
@@ -1406,7 +1628,7 @@ function resetHover(hideCursor = true){
   holdStart = 0;
   document.querySelectorAll('.answer-card').forEach(c => {
     c.classList.remove('hover');
-    c.style.removeProperty('--hold');
+    clearHoldProgress(c);
   });
 }
 
@@ -1535,6 +1757,36 @@ function showOnly(name){
 
   if (name !== 'game') {
     clearHandCanvas();
+  }
+}
+
+
+function setAnswerCardContent(card, text){
+  card.innerHTML = `
+    <span class="answer-label">${escapeHtml(text)}</span>
+    <svg class="hold-ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <rect class="hold-ring-bg" x="5" y="5" width="90" height="90" rx="18" ry="18" pathLength="1"></rect>
+      <rect class="hold-ring-line" x="5" y="5" width="90" height="90" rx="18" ry="18" pathLength="1"></rect>
+    </svg>
+  `;
+  clearHoldProgress(card);
+}
+
+function setHoldProgress(card, progress){
+  const p = clamp(Number(progress) || 0, 0, 1);
+  card.style.setProperty('--hold', p);
+  const line = card.querySelector('.hold-ring-line');
+  if (line) {
+    line.style.strokeDashoffset = String(1 - p);
+  }
+}
+
+function clearHoldProgress(card){
+  card.style.removeProperty('--hold');
+  const line = card.querySelector('.hold-ring-line');
+  if (line) {
+    line.style.strokeDasharray = '1';
+    line.style.strokeDashoffset = '1';
   }
 }
 
