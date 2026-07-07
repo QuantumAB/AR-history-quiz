@@ -1119,6 +1119,14 @@
       transition:stroke-dasharray .04s linear!important;
     }
 
+
+    /* V13: ให้ JS ใช้ความยาวจริงของ path คุมเส้นโหลด ไม่ใช้ค่า 100 แบบคงที่ */
+    .hold-ring-line{
+      stroke-dasharray:0 9999!important;
+      stroke-dashoffset:0!important;
+      transition:stroke-dasharray .035s linear!important;
+    }
+
   </style>
 </head>
 
@@ -1243,6 +1251,8 @@ let timerLoop = null;
 let audio = null;
 let muted = false;
 let handCtx = null;
+let lastTouchedKey = '';
+let lastTouchedAt = 0;
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -1349,6 +1359,8 @@ async function startGame(){
   playing = true;
   answerLocked = false;
   currentHoverKey = '';
+  lastTouchedKey = '';
+  lastTouchedAt = 0;
   holdStart = 0;
 
   showOnly('game');
@@ -1418,6 +1430,8 @@ function showQuestion(){
   hideFeedback();
   answerLocked = false;
   currentHoverKey = '';
+  lastTouchedKey = '';
+  lastTouchedAt = 0;
   holdStart = 0;
   clearHandCanvas();
 
@@ -1472,9 +1486,20 @@ function onHandsResults(results){
   const touched = findTouchedOption(palms);
 
   if (!touched) {
+    // กันมือสั่น/จุดจับหลุดเสี้ยววินาที จะได้ไม่รีเซ็ตเส้นทันที
+    if (currentHoverKey && Date.now() - lastTouchedAt < 120) {
+      const holdMs = Number(cfg('HOLD_MS', '800')) || 800;
+      const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
+      const card = [...document.querySelectorAll('.answer-card')].find(c => c.dataset.key === currentHoverKey);
+      if (card) setHoldProgress(card, progress);
+      return;
+    }
     resetHover(false);
     return;
   }
+
+  lastTouchedKey = touched.key;
+  lastTouchedAt = Date.now();
 
   document.querySelectorAll('.answer-card').forEach(c => c.classList.toggle('hover', c.dataset.key === touched.key));
 
@@ -1664,6 +1689,8 @@ function drawHandSkeleton(results){
 
 function resetHover(hideCursor = true){
   currentHoverKey = '';
+  lastTouchedKey = '';
+  lastTouchedAt = 0;
   holdStart = 0;
   document.querySelectorAll('.answer-card').forEach(c => {
     c.classList.remove('hover');
@@ -1819,24 +1846,49 @@ function setHoldProgress(card, progress){
   card.style.setProperty('--hold', p);
 
   const line = card.querySelector('.hold-ring-line');
-  if (line) {
-    // ทำให้เส้น "ค่อย ๆ ยาวขึ้น" จาก 0% ถึง 100%
-    // pathLength = 100, เริ่มจากขอบล่างซ้าย วิ่งขึ้นด้านบนก่อน แล้ววนไปทางขวา
-    const visibleLength = p * 100;
-    line.style.setProperty('stroke-dasharray', `${visibleLength} 100`, 'important');
-    line.style.setProperty('stroke-dashoffset', '0', 'important');
-  }
+  if (!line) return;
+
+  // ใช้ความยาวจริงของเส้นกรอบ ไม่พึ่ง pathLength
+  const total = getRingLength(line);
+  const drawLength = total * p;
+
+  // 0% = ไม่มีเส้น
+  // 100% = เส้นยาวเต็มกรอบ
+  // เริ่มจากล่างซ้าย -> ขึ้นด้านบน -> วนไปทางขวา -> ครบรอบ
+  line.style.setProperty('stroke-dasharray', `${drawLength} ${total}`, 'important');
+  line.style.setProperty('stroke-dashoffset', '0', 'important');
 }
+
+function getRingLength(line){
+  if (!line) return 1;
+
+  const cached = Number(line.dataset.ringLength || 0);
+  if (cached > 0) return cached;
+
+  let total = 1;
+  try {
+    total = line.getTotalLength();
+  } catch (err) {
+    total = 360;
+  }
+
+  if (!Number.isFinite(total) || total <= 0) total = 360;
+  line.dataset.ringLength = String(total);
+  return total;
+}
+
 
 function clearHoldProgress(card){
   card.style.removeProperty('--hold');
 
   const line = card.querySelector('.hold-ring-line');
-  if (line) {
-    // 0% = ยังไม่มีเส้นฟ้า
-    line.style.setProperty('stroke-dasharray', '0 100', 'important');
-    line.style.setProperty('stroke-dashoffset', '0', 'important');
-  }
+  if (!line) return;
+
+  const total = getRingLength(line);
+
+  // 0% = ไม่มีเส้นฟ้า
+  line.style.setProperty('stroke-dasharray', `0 ${total}`, 'important');
+  line.style.setProperty('stroke-dashoffset', '0', 'important');
 }
 
 function getOptionTexts(){
