@@ -1127,6 +1127,93 @@
       transition:stroke-dasharray .035s linear!important;
     }
 
+
+    /* V14: จัดตำแหน่งคำตอบใหม่
+       หินกลาง = บนซ้าย
+       สำริด = บนขวา
+       หินใหม่ = ตรงกลางใต้คำถาม
+       หินเก่า = ล่างซ้าย
+       เหล็ก = ล่างขวา
+    */
+    @media (orientation:landscape){
+      #answers{
+        grid-template-columns:clamp(150px,24vw,310px) 1fr clamp(150px,24vw,310px)!important;
+        grid-template-rows:18vh minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 5vh!important;
+        column-gap:clamp(14px,3vw,48px)!important;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:18vh!important;
+        bottom:5vh!important;
+      }
+
+      /* แถวบน: หินกลาง ตรงกับ สำริด */
+      .pos-2{grid-column:1!important;grid-row:2!important;} /* หินกลาง */
+      .pos-4{grid-column:3!important;grid-row:2!important;} /* สำริด */
+
+      /* ตรงกลางใต้คำถาม */
+      .pos-3{grid-column:2!important;grid-row:3!important;} /* หินใหม่ */
+
+      /* แถวล่าง: หินเก่า ตรงกับ เหล็ก */
+      .pos-1{grid-column:1!important;grid-row:4!important;} /* หินเก่า */
+      .pos-5{grid-column:3!important;grid-row:4!important;} /* เหล็ก */
+
+      .answer-card{
+        justify-self:center!important;
+        align-self:center!important;
+      }
+
+      .pos-3{
+        z-index:9!important;
+      }
+
+      .answer-card.hover,
+      .pos-3.hover,
+      .pos-4.hover,
+      .pos-5.hover{
+        transform:scale(1.035)!important;
+      }
+    }
+
+    @media (orientation:portrait){
+      #answers{
+        grid-template-columns:42vw 1fr 42vw!important;
+        grid-template-rows:21vh minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 5vh!important;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:21vh!important;
+        bottom:5vh!important;
+      }
+
+      .pos-2{grid-column:1!important;grid-row:2!important;} /* หินกลาง */
+      .pos-4{grid-column:3!important;grid-row:2!important;} /* สำริด */
+      .pos-3{grid-column:2!important;grid-row:3!important;} /* หินใหม่ */
+      .pos-1{grid-column:1!important;grid-row:4!important;} /* หินเก่า */
+      .pos-5{grid-column:3!important;grid-row:4!important;} /* เหล็ก */
+
+      .answer-card.hover,
+      .pos-3.hover,
+      .pos-4.hover,
+      .pos-5.hover{
+        transform:scale(1.03)!important;
+      }
+    }
+
+    @media (max-height:620px) and (orientation:landscape){
+      #answers{
+        grid-template-rows:16vh minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 4vh!important;
+      }
+
+      #answers::before,
+      #answers::after{
+        top:16vh!important;
+        bottom:4vh!important;
+      }
+    }
+
   </style>
 </head>
 
