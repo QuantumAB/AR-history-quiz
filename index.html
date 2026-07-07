@@ -263,41 +263,41 @@
     .pos-5{right:4vw; top:58%}
     .pos-5.hover{transform:scale(1.05)}
 
-    #cursor{
+    .palm-cursor{
       position:absolute;
       z-index:20;
-      width:92px;
-      height:92px;
-      margin-left:-46px;
-      margin-top:-46px;
+      width:118px;
+      height:118px;
+      margin-left:-59px;
+      margin-top:-59px;
       border-radius:50%;
       pointer-events:none;
       display:none;
       background:conic-gradient(#ffd21f calc(var(--p,0)*1turn),rgba(255,255,255,.25) 0);
       box-shadow:
-        0 0 0 7px rgba(255,210,31,.18),
-        0 0 0 14px rgba(42,23,13,.28),
-        0 0 34px rgba(255,210,31,.85);
+        0 0 0 8px rgba(255,210,31,.20),
+        0 0 0 18px rgba(42,23,13,.28),
+        0 0 40px rgba(255,210,31,.88);
     }
-    #cursor::before{
+    .palm-cursor::before{
       content:"";
       position:absolute;
-      inset:17px;
+      inset:18px;
       border-radius:50%;
-      background:rgba(255,210,31,.92);
-      border:4px solid rgba(255,255,255,.95);
-      box-shadow:inset 0 0 0 4px rgba(90,53,26,.30);
+      background:rgba(255,210,31,.95);
+      border:5px solid rgba(255,255,255,.96);
+      box-shadow:inset 0 0 0 5px rgba(90,53,26,.28);
     }
-    #cursor::after{
-      content:"☝️";
+    .palm-cursor::after{
+      content:"🖐️";
       position:absolute;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:42px;
+      font-size:54px;
       line-height:1;
-      filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
+      filter:drop-shadow(0 4px 5px rgba(0,0,0,.38));
       transform:translateY(-2px);
     }
 
@@ -623,26 +623,217 @@
       .pos-5{top:61%}
     }
 
+
+    /* ===============================
+       V6 PALM MODE
+       - ใช้ฝ่ามือซ้าย/ขวาแตะคำตอบ
+       - ปุ่มคำตอบเป็นสี่เหลี่ยมจัตุรัสใหญ่
+       - คำถามอยู่สูงขึ้น
+    =============================== */
+    @media (orientation:landscape){
+      .topbar{
+        top:max(52px,calc(env(safe-area-inset-top) + 46px));
+        width:clamp(380px,54vw,780px);
+        max-width:calc(100vw - 420px);
+        padding:12px 20px 14px;
+        border-radius:28px;
+      }
+
+      .question-text{
+        font-size:clamp(28px,3.35vw,50px);
+        line-height:1.12;
+      }
+
+      .timer-bar{
+        height:13px;
+        width:min(640px,94%);
+      }
+
+      #answers::before,
+      #answers::after{
+        top:22%;
+        bottom:4%;
+        border-radius:32px;
+      }
+
+      #answers::before{
+        left:clamp(12px,2.4vw,42px);
+        width:clamp(170px,24vw,310px);
+      }
+
+      #answers::after{
+        right:clamp(12px,2.4vw,42px);
+        width:clamp(170px,24vw,310px);
+      }
+
+      .answer-card{
+        width:clamp(128px,20vh,176px);
+        height:clamp(128px,20vh,176px);
+        min-height:0;
+        aspect-ratio:1/1;
+        border-radius:24px;
+        font-size:clamp(28px,4.1vw,52px);
+        padding:10px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+
+      .pos-1{left:clamp(24px,5vw,72px); top:24%}
+      .pos-2{left:clamp(24px,5vw,72px); top:47%}
+      .pos-3{left:clamp(24px,5vw,72px); top:70%}
+
+      .pos-4{right:clamp(34px,5.4vw,82px); top:35%}
+      .pos-5{right:clamp(34px,5.4vw,82px); top:61%}
+
+      .answer-card.hover{
+        transform:scale(1.045);
+      }
+      .pos-4.hover,
+      .pos-5.hover{
+        transform:translateX(-6px) scale(1.045);
+      }
+    }
+
+    @media (orientation:portrait){
+      .topbar{
+        top:max(68px,calc(env(safe-area-inset-top) + 60px));
+        width:calc(100vw - 20px);
+        padding:10px 12px 12px;
+      }
+
+      .question-text{
+        font-size:clamp(22px,6vw,34px);
+      }
+
+      .answer-card{
+        width:34vw;
+        height:34vw;
+        min-height:0;
+        aspect-ratio:1/1;
+        border-radius:20px;
+        font-size:clamp(22px,6.2vw,34px);
+      }
+
+      .pos-1{left:14px; top:31%}
+      .pos-2{left:14px; top:49%}
+      .pos-3{left:14px; top:67%}
+      .pos-4{right:14px; top:40%}
+      .pos-5{right:14px; top:61%}
+
+      .palm-cursor{
+        width:94px;
+        height:94px;
+        margin-left:-47px;
+        margin-top:-47px;
+      }
+      .palm-cursor::after{
+        font-size:42px;
+      }
+    }
+
+    @media (max-height:620px) and (orientation:landscape){
+      .topbar{
+        top:max(44px,calc(env(safe-area-inset-top) + 38px));
+        padding:9px 16px 11px;
+      }
+      .question-text{
+        font-size:clamp(22px,3vw,38px);
+      }
+      .answer-card{
+        width:clamp(104px,19vh,136px);
+        height:clamp(104px,19vh,136px);
+        font-size:clamp(24px,3.6vw,42px);
+        border-radius:20px;
+      }
+      .pos-1{top:25%}
+      .pos-2{top:47%}
+      .pos-3{top:69%}
+      .pos-4{top:36%}
+      .pos-5{top:60%}
+
+      .palm-cursor{
+        width:96px;
+        height:96px;
+        margin-left:-48px;
+        margin-top:-48px;
+      }
+      .palm-cursor::after{
+        font-size:44px;
+      }
+    }
+
+
+    /* ===============================
+       V7 HAND LANDMARK MODE
+       - ไม่ใช้วงกลม/อีโมจิ
+       - วาดจุดบนฝ่ามือ ปลายนิ้ว และเส้นเชื่อมแบบ MediaPipe
+    =============================== */
+    #handCanvas{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      z-index:3;
+      pointer-events:none;
+    }
+
+    #app{
+      z-index:4;
+    }
+
+    .palm-cursor{
+      display:none!important;
+    }
+
+    .answer-card.hover{
+      box-shadow:
+        0 24px 60px rgba(0,0,0,.42),
+        0 0 0 10px rgba(255,210,31,.28),
+        0 0 34px rgba(255,210,31,.45),
+        inset 0 0 0 3px rgba(255,255,255,.32);
+      filter:brightness(1.1);
+    }
+
+
+    .answer-card::before{
+      content:"";
+      position:absolute;
+      left:10%;
+      right:10%;
+      bottom:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ffd21f,#ff8c1a);
+      transform:scaleX(var(--hold,0));
+      transform-origin:left center;
+      transition:transform .06s linear;
+      box-shadow:0 0 18px rgba(255,210,31,.65);
+      z-index:2;
+      pointer-events:none;
+    }
+
   </style>
 </head>
 
 <body>
   <video id="video" playsinline muted></video>
+  <canvas id="handCanvas"></canvas>
   <div id="shade"></div>
 
   <div id="app">
     <div id="startScreen" class="center-card">
       <h1 id="startTitle" class="title">เกม AR ยุคหิน–ยุคโลหะ</h1>
-      <div id="startSubtitle" class="subtitle">ใช้นิ้วชี้เลือกคำตอบให้ถูกยุค</div>
+      <div id="startSubtitle" class="subtitle">กางฝ่ามือแตะคำตอบให้ถูกยุค</div>
       <div id="topicText" class="topic">หินเก่า / หินกลาง / หินใหม่ / สำริด / เหล็ก</div>
       <input id="playerName" class="name-input hidden" type="text" autocomplete="off" placeholder="ชื่อผู้เล่น / ห้องเรียน (ไม่ใส่ก็ได้)">
       <button id="startBtn" class="main-btn">เริ่มเกม</button>
-      <div id="startNote" class="small-note">แนะนำให้เปิดแนวนอน และอนุญาตการใช้กล้อง<br>ใช้นิ้วชี้ไปที่คำตอบ แล้วแช่ไว้ประมาณ 1 วินาที</div>
+      <div id="startNote" class="small-note">แนะนำให้เปิดแนวนอน และอนุญาตการใช้กล้อง<br>กางฝ่ามือไปแตะคำตอบ แล้วแช่ไว้ประมาณ 1 วินาที</div>
     </div>
 
     <div id="loadingScreen" class="center-card hidden">
       <h2 id="loadingText" class="title" style="font-size:clamp(26px,4vw,46px)">กำลังโหลด...</h2>
-      <div id="loadingSubtitle" class="subtitle">เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้</div>
+      <div id="loadingSubtitle" class="subtitle">เตรียมกล้อง คำถาม และระบบจับโครงฝ่ามือ</div>
     </div>
 
     <div id="gameScreen" class="hidden">
@@ -673,7 +864,8 @@
         <div class="answer-card pos-5" data-key="เหล็ก" data-place="ล่างกลาง">เหล็ก</div>
       </div>
 
-      <div id="cursor"></div>
+      <div id="cursor" class="palm-cursor"></div>
+      <div id="cursor2" class="palm-cursor"></div>
       <div id="feedback"></div>
     </div>
 
@@ -697,6 +889,7 @@ const DEFAULT_OPTIONS = ['หินเก่า', 'หินกลาง', 'ห�
 
 const el = {
   video: document.getElementById('video'),
+  handCanvas: document.getElementById('handCanvas'),
   startScreen: document.getElementById('startScreen'),
   loadingScreen: document.getElementById('loadingScreen'),
   gameScreen: document.getElementById('gameScreen'),
@@ -718,6 +911,7 @@ const el = {
   soundBtn: document.getElementById('soundBtn'),
   feedback: document.getElementById('feedback'),
   cursor: document.getElementById('cursor'),
+  cursor2: document.getElementById('cursor2'),
   finishTitle: document.getElementById('finishTitle'),
   finalScore: document.getElementById('finalScore'),
   resultDetail: document.getElementById('resultDetail')
@@ -742,6 +936,7 @@ let questionDeadline = 0;
 let timerLoop = null;
 let audio = null;
 let muted = false;
+let handCtx = null;
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -764,7 +959,7 @@ function bindEvents(){
 async function loadGameData(){
   showOnly('loading');
   el.loadingText.textContent = cfg('LOADING_TITLE_TEXT', 'กำลังโหลด...');
-  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้');
+  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับโครงฝ่ามือ');
 
   try{
     if (!GAS_URL || GAS_URL.includes('PASTE_YOUR_APPS_SCRIPT')) {
@@ -804,7 +999,7 @@ function normalizeConfig(raw){
 
 function applyConfigToStartScreen(){
   el.startTitle.textContent = cfg('APP_TITLE', 'เกม AR ยุคหิน–ยุคโลหะ');
-  el.startSubtitle.textContent = cfg('APP_SUBTITLE', 'ใช้นิ้วชี้เลือกคำตอบให้ถูกยุค');
+  el.startSubtitle.textContent = cfg('APP_SUBTITLE', 'กางฝ่ามือแตะคำตอบให้ถูกยุค');
   el.topicText.textContent = cfg('GAME_TOPIC_TEXT', 'หินเก่า / หินกลาง / หินใหม่ / สำริด / เหล็ก');
   el.startBtn.textContent = cfg('START_BUTTON_TEXT', 'เริ่มเกม');
   el.playerName.placeholder = cfg('PLAYER_NAME_PLACEHOLDER', 'ชื่อผู้เล่น / ห้องเรียน (ไม่ใส่ก็ได้)');
@@ -825,7 +1020,7 @@ function applyConfigToStartScreen(){
 async function startGame(){
   showOnly('loading');
   el.loadingText.textContent = cfg('LOADING_CAMERA_TEXT', 'กำลังเปิดกล้อง...');
-  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้');
+  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับโครงฝ่ามือ');
 
   audio = audio || new GameAudio();
   audio.setMuted(muted);
@@ -918,7 +1113,7 @@ function showQuestion(){
   answerLocked = false;
   currentHoverKey = '';
   holdStart = 0;
-  el.cursor.style.display = 'none';
+  clearHandCanvas();
 
   const q = roundQuestions[currentIndex];
   el.questionText.textContent = formatQuestionText(q.question);
@@ -955,24 +1150,23 @@ function updateTimer(){
 }
 
 function onHandsResults(results){
+  drawHandSkeleton(results);
+
   if (!playing || answerLocked) {
-    el.cursor.style.display = 'none';
+    resetHover(false);
     return;
   }
 
-  const points = getFingerPoints(results);
-  if (!points.length) {
-    resetHover(true);
+  const palms = getPalmPoints(results);
+  if (!palms.length) {
+    resetHover(false);
     return;
   }
 
-  // ใช้ปลายนิ้วชี้หลักเป็นตัวนำ และให้วงเหลืองตามนิ้วตลอดเวลา
-  const primaryPoint = points[0];
-  const touched = findTouchedOption(points);
+  const touched = findTouchedOption(palms);
 
   if (!touched) {
     resetHover(false);
-    drawCursor(primaryPoint, 0);
     return;
   }
 
@@ -986,31 +1180,47 @@ function onHandsResults(results){
 
   const holdMs = Number(cfg('HOLD_MS', '800')) || 800;
   const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
-  drawCursor(touched.point || primaryPoint, progress);
+
+  // แสดงความคืบหน้าการแช่ด้วยเงา/ขอบปุ่มแทนวงกลม
+  if (touched.card) touched.card.style.setProperty('--hold', progress);
 
   if (progress >= 1) {
     chooseAnswer(touched.key);
   }
 }
 
-function getFingerPoints(results){
+function getPalmPoints(results){
   const points = [];
   const landmarks = results && results.multiHandLandmarks ? results.multiHandLandmarks : [];
-  landmarks.forEach(lm => {
-    const p = lm[8]; // ปลายนิ้วชี้ / index fingertip
-    if (!p) return;
+
+  landmarks.forEach((lm, handIndex) => {
+    // ใช้จุดกลางฝ่ามือ โดยเฉลี่ยจากข้อมือและโคนนิ้วหลัก ๆ
+    const ids = [0, 5, 9, 13, 17];
+    let sx = 0, sy = 0, count = 0;
+
+    ids.forEach(id => {
+      const p = lm[id];
+      if (!p) return;
+      sx += p.x;
+      sy += p.y;
+      count++;
+    });
+
+    if (!count) return;
+
     points.push({
-      x: (1 - p.x) * window.innerWidth,
-      y: p.y * window.innerHeight
+      x: (1 - (sx / count)) * window.innerWidth,
+      y: (sy / count) * window.innerHeight,
+      handIndex
     });
   });
+
   return points;
 }
 
 function findTouchedOption(points){
-  // ใช้ปลายนิ้วชี้เป็นตัวเลือก และขยายพื้นที่จับให้ใหญ่ขึ้น
-  // ถ้าในชีต CONFIG ยังเป็นค่าเดิม 30 ระบบจะบังคับขั้นต่ำเป็น 60
-  const padding = Math.max(Number(cfg('HIT_PADDING', '90')) || 90, 70);
+  // ใช้กลางฝ่ามือเป็นตัวเลือก และขยายพื้นที่จับให้ใหญ่ขึ้น
+  const padding = Math.max(Number(cfg('HIT_PADDING', '105')) || 105, 85);
   let best = null;
 
   document.querySelectorAll('.answer-card').forEach(card => {
@@ -1037,22 +1247,121 @@ function findTouchedOption(points){
   return best;
 }
 
-function drawCursor(point, progress){
-  const radius = 46;
-  const x = clamp(point.x, radius, window.innerWidth - radius);
-  const y = clamp(point.y, radius, window.innerHeight - radius);
+function drawPalmCursors(){
+  // v7 ไม่ใช้วงกลมจับมือแล้ว ใช้ drawHandSkeleton() แทน
+}
 
-  el.cursor.style.display = 'block';
-  el.cursor.style.left = `${x}px`;
-  el.cursor.style.top = `${y}px`;
-  el.cursor.style.setProperty('--p', progress);
+function hidePalmCursors(){
+  // v7 ไม่ใช้ cursor แล้ว
+}
+
+function clearHandCanvas(){
+  if (!el.handCanvas) return;
+  const ctx = handCtx || el.handCanvas.getContext('2d');
+  ctx.clearRect(0, 0, el.handCanvas.width || 0, el.handCanvas.height || 0);
+}
+
+function resizeHandCanvas(){
+  if (!el.handCanvas) return null;
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.round(window.innerWidth * dpr);
+  const h = Math.round(window.innerHeight * dpr);
+
+  if (el.handCanvas.width !== w || el.handCanvas.height !== h) {
+    el.handCanvas.width = w;
+    el.handCanvas.height = h;
+    el.handCanvas.style.width = window.innerWidth + 'px';
+    el.handCanvas.style.height = window.innerHeight + 'px';
+  }
+
+  handCtx = handCtx || el.handCanvas.getContext('2d');
+  handCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return handCtx;
+}
+
+function drawHandSkeleton(results){
+  const ctx = resizeHandCanvas();
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+  const handsData = results && results.multiHandLandmarks ? results.multiHandLandmarks : [];
+  if (!handsData.length) return;
+
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [0,9],[9,10],[10,11],[11,12],
+    [0,13],[13,14],[14,15],[15,16],
+    [0,17],[17,18],[18,19],[19,20],
+    [5,9],[9,13],[13,17],[5,17]
+  ];
+
+  handsData.forEach(lm => {
+    const pts = lm.map(p => ({
+      x: (1 - p.x) * window.innerWidth,
+      y: p.y * window.innerHeight
+    }));
+
+    // เส้นเชื่อมกระดูกมือ
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(255, 212, 31, 0.95)';
+    ctx.lineWidth = 5;
+    ctx.shadowColor = 'rgba(255, 212, 31, 0.75)';
+    ctx.shadowBlur = 14;
+
+    connections.forEach(([a,b]) => {
+      const pa = pts[a], pb = pts[b];
+      if (!pa || !pb) return;
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+    });
+
+    // จุดบนข้อนิ้ว/ปลายนิ้ว
+    ctx.shadowBlur = 10;
+    pts.forEach((p, i) => {
+      const isTip = [4,8,12,16,20].includes(i);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, isTip ? 8 : 6, 0, Math.PI * 2);
+      ctx.fillStyle = isTip ? '#fff4a8' : '#ffd21f';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(70, 40, 12, 0.85)';
+      ctx.stroke();
+    });
+
+    // จุดกลางฝ่ามือ เพื่อให้รู้ว่าใช้ตำแหน่งไหนแตะคำตอบ
+    const centerIds = [0,5,9,13,17];
+    const center = centerIds.reduce((acc, id) => {
+      acc.x += pts[id].x;
+      acc.y += pts[id].y;
+      return acc;
+    }, {x:0, y:0});
+    center.x /= centerIds.length;
+    center.y /= centerIds.length;
+
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, 11, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff8c1a';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#fff4a8';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  });
 }
 
 function resetHover(hideCursor = true){
   currentHoverKey = '';
   holdStart = 0;
-  if (hideCursor) el.cursor.style.display = 'none';
-  document.querySelectorAll('.answer-card').forEach(c => c.classList.remove('hover'));
+  document.querySelectorAll('.answer-card').forEach(c => {
+    c.classList.remove('hover');
+    c.style.removeProperty('--hold');
+  });
 }
 
 function chooseAnswer(selectedKey){
@@ -1060,7 +1369,7 @@ function chooseAnswer(selectedKey){
 
   answerLocked = true;
   clearInterval(timerLoop);
-  el.cursor.style.display = 'none';
+  clearHandCanvas();
 
   const q = roundQuestions[currentIndex];
   const correctKey = String(q.correct || '').trim();
@@ -1177,6 +1486,10 @@ function showOnly(name){
   el.loadingScreen.classList.toggle('hidden', name !== 'loading');
   el.gameScreen.classList.toggle('hidden', name !== 'game');
   el.resultScreen.classList.toggle('hidden', name !== 'result');
+
+  if (name !== 'game') {
+    clearHandCanvas();
+  }
 }
 
 function getOptionTexts(){
