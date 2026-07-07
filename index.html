@@ -88,10 +88,10 @@
       top:max(12px,env(safe-area-inset-top));
       left:50%;
       transform:translateX(-50%);
-      width:min(980px,82vw);
-      padding:16px 26px;
-      border-radius:32px;
-      background:linear-gradient(135deg,rgba(90,53,26,.90),rgba(42,23,13,.78));
+      width:min(1060px,84vw);
+      padding:16px 24px 18px;
+      border-radius:34px;
+      background:linear-gradient(135deg,rgba(90,53,26,.92),rgba(42,23,13,.82));
       border:2px solid rgba(244,199,108,.55);
       box-shadow:var(--shadow);
       display:flex;
@@ -101,13 +101,41 @@
       text-align:center;
     }
 
+    .question-wrap{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+    }
+
     .question-text{
-      font-size:clamp(26px,3.6vw,52px);
+      font-size:clamp(30px,4vw,58px);
       font-weight:1000;
-      line-height:1.18;
+      line-height:1.15;
       color:#fff3d0;
       text-shadow:0 2px 12px rgba(0,0,0,.55);
       white-space:pre-line;
+      max-width:100%;
+    }
+
+    .timer-bar{
+      width:min(780px,92%);
+      height:14px;
+      border-radius:999px;
+      background:rgba(255,244,216,.18);
+      border:1px solid rgba(244,199,108,.30);
+      overflow:hidden;
+      box-shadow:inset 0 2px 6px rgba(0,0,0,.25);
+    }
+
+    .timer-bar-fill{
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ffd86d,#ff9e2c,#f04f2e);
+      transition:width .1s linear;
     }
 
     .hud{
@@ -139,14 +167,42 @@
       box-shadow:0 10px 26px rgba(0,0,0,.25);
       font-weight:800;
       color:#fff3d0;
-      font-size:clamp(20px,2.2vw,30px);
+      font-size:clamp(22px,2.6vw,34px);
       backdrop-filter:blur(8px);
+      min-width:132px;
+      text-align:center;
+    }
+
+    #answers{
+      position:absolute;
+      inset:0;
+      z-index:7;
+    }
+
+    #answers::before,
+    #answers::after{
+      content:"";
+      position:absolute;
+      top:17%;
+      bottom:8%;
+      width:min(330px,31vw);
+      border-radius:34px;
+      background:linear-gradient(180deg,rgba(255,244,216,.10),rgba(90,53,26,.12));
+      border:1.5px solid rgba(244,199,108,.18);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+      pointer-events:none;
+    }
+
+    #answers::before{ left:2.3vw; }
+    #answers::after{
+      right:2.3vw;
+      width:min(300px,27vw);
     }
 
     .sound-btn{
       border:0;
       cursor:pointer;
-      padding:9px 13px;
+      padding:11px 15px;
       border-radius:999px;
       background:#fff0c7;
       color:#3a210f;
@@ -157,37 +213,37 @@
     .answer-card{
       position:absolute;
       z-index:8;
-      width:min(220px,27vw);
-      min-height:84px;
+      width:min(300px,31vw);
+      min-height:100px;
       border:3px solid rgba(244,199,108,.68);
-      border-radius:var(--radius);
+      border-radius:30px;
       background:
         radial-gradient(circle at 30% 20%,rgba(255,255,255,.20),transparent 28%),
-        linear-gradient(135deg,rgba(245,223,184,.96),rgba(196,142,74,.94));
+        linear-gradient(135deg,rgba(245,223,184,.98),rgba(196,142,74,.95));
       color:var(--ink);
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
-      padding:12px 16px;
-      box-shadow:0 20px 48px rgba(0,0,0,.34), inset 0 0 0 2px rgba(255,255,255,.26);
-      font-size:clamp(24px,3.8vw,44px);
+      padding:14px 16px;
+      box-shadow:0 18px 40px rgba(0,0,0,.28), inset 0 0 0 2px rgba(255,255,255,.24);
+      font-size:clamp(34px,4.5vw,56px);
       font-weight:1000;
-      line-height:1.05;
+      line-height:1.02;
       letter-spacing:-.02em;
-      transform-origin:center;
       transition:transform .14s ease, filter .14s ease, box-shadow .14s ease;
+      white-space:pre-line;
+    }
+
+    .answer-card.hover{
+      transform:scale(1.05);
+      filter:brightness(1.08);
+      box-shadow:0 24px 60px rgba(0,0,0,.42),0 0 0 8px rgba(244,199,108,.18), inset 0 0 0 2px rgba(255,255,255,.28);
     }
 
     .answer-card::after{
       display:none;
       content:"";
-    }
-
-    .answer-card.hover{
-      transform:scale(1.06);
-      filter:brightness(1.08);
-      box-shadow:0 24px 60px rgba(0,0,0,.42),0 0 0 8px rgba(244,199,108,.18), inset 0 0 0 2px rgba(255,255,255,.28);
     }
 
     .answer-card.correct{
@@ -200,12 +256,12 @@
       border-color:#ffd0bf;
     }
 
-    .pos-1{left:clamp(14px,5vw,70px); top:20%}
-    .pos-2{left:clamp(14px,5vw,70px); top:55%}
-    .pos-3{right:clamp(14px,5vw,70px); top:20%}
-    .pos-4{right:clamp(14px,5vw,70px); top:55%}
-    .pos-5{left:50%; bottom:max(16px,env(safe-area-inset-bottom)); transform:translateX(-50%)}
-    .pos-5.hover{transform:translateX(-50%) scale(1.06)}
+    .pos-1{left:4vw; top:22%}
+    .pos-2{left:4vw; top:43%}
+    .pos-3{left:4vw; top:64%}
+    .pos-4{right:4vw; top:31%}
+    .pos-5{right:4vw; top:58%}
+    .pos-5.hover{transform:scale(1.05)}
 
     #cursor{
       position:absolute;
@@ -233,16 +289,16 @@
       box-shadow:inset 0 0 0 4px rgba(90,53,26,.30);
     }
     #cursor::after{
-      content:"";
+      content:"☝️";
       position:absolute;
-      left:50%;
-      top:50%;
-      width:14px;
-      height:14px;
-      transform:translate(-50%,-50%);
-      border-radius:50%;
-      background:#3a210f;
-      box-shadow:0 0 0 6px rgba(255,255,255,.28);
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:42px;
+      line-height:1;
+      filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
+      transform:translateY(-2px);
     }
 
     .center-card{
@@ -377,22 +433,34 @@
     .result-table td:last-child{text-align:center;font-weight:900}
 
     @media (orientation:portrait){
-      .topbar{width:86vw;padding:12px 14px;border-radius:24px}
-      .question-text{font-size:clamp(22px,6.2vw,34px)}
+      .topbar{width:88vw;padding:14px 14px 16px;border-radius:24px}
+      .question-text{font-size:clamp(24px,6.4vw,36px)}
+      .timer-bar{height:12px;width:96%}
+
+      #answers::before,
+      #answers::after{
+        top:20%;
+        bottom:6%;
+        border-radius:24px;
+      }
+      #answers::before{left:8px;width:38vw}
+      #answers::after{right:8px;width:30vw}
+
       .answer-card{
-        width:33vw;
-        min-height:72px;
+        min-height:84px;
         border-radius:22px;
-        font-size:clamp(20px,6vw,34px);
-        padding:10px;
+        width:38vw;
+        font-size:clamp(24px,6vw,38px);
+        padding:10px 8px;
       }
       .pos-1{left:10px; top:24%}
-      .pos-2{left:10px; top:55%}
-      .pos-3{right:10px; top:24%}
-      .pos-4{right:10px; top:55%}
-      .pos-5{bottom:7%}
+      .pos-2{left:10px; top:43%}
+      .pos-3{left:10px; top:62%}
+      .pos-4{right:10px; top:34%}
+      .pos-5{right:10px; top:57%}
+
       .hud,.hud-right{top:max(8px,env(safe-area-inset-top))}
-      .chip{font-size:clamp(16px,4.4vw,22px);padding:9px 12px}
+      .chip{font-size:clamp(18px,4.8vw,24px);padding:9px 12px;min-width:110px}
     }
   </style>
 </head>
@@ -413,7 +481,7 @@
 
     <div id="loadingScreen" class="center-card hidden">
       <h2 id="loadingText" class="title" style="font-size:clamp(26px,4vw,46px)">กำลังโหลด...</h2>
-      <div class="subtitle">เตรียมคำถามและระบบจับมือ</div>
+      <div id="loadingSubtitle" class="subtitle">เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้</div>
     </div>
 
     <div id="gameScreen" class="hidden">
@@ -423,7 +491,12 @@
       </div>
 
       <div class="topbar">
-        <div id="questionText" class="question-text">คำถาม</div>
+        <div class="question-wrap">
+          <div id="questionText" class="question-text">คำถาม</div>
+          <div class="timer-bar">
+            <div id="timerBarFill" class="timer-bar-fill"></div>
+          </div>
+        </div>
       </div>
 
       <div class="hud-right">
@@ -473,8 +546,11 @@ const el = {
   playerName: document.getElementById('playerName'),
   startBtn: document.getElementById('startBtn'),
   playAgainBtn: document.getElementById('playAgainBtn'),
+  startNote: document.getElementById('startNote'),
   loadingText: document.getElementById('loadingText'),
+  loadingSubtitle: document.getElementById('loadingSubtitle'),
   questionText: document.getElementById('questionText'),
+  timerBarFill: document.getElementById('timerBarFill'),
   scoreChip: document.getElementById('scoreChip'),
   roundChip: document.getElementById('roundChip'),
   timerChip: document.getElementById('timerChip'),
@@ -523,7 +599,8 @@ function bindEvents(){
 
 async function loadGameData(){
   showOnly('loading');
-  el.loadingText.textContent = 'กำลังโหลด...';
+  el.loadingText.textContent = cfg('LOADING_TITLE_TEXT', 'กำลังโหลด...');
+  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้');
 
   try{
     if (!GAS_URL || GAS_URL.includes('PASTE_YOUR_APPS_SCRIPT')) {
@@ -584,6 +661,7 @@ function applyConfigToStartScreen(){
 async function startGame(){
   showOnly('loading');
   el.loadingText.textContent = cfg('LOADING_CAMERA_TEXT', 'กำลังเปิดกล้อง...');
+  if (el.loadingSubtitle) el.loadingSubtitle.textContent = cfg('LOADING_SUBTITLE_TEXT', 'เตรียมกล้อง คำถาม และระบบจับปลายนิ้วชี้');
 
   audio = audio || new GameAudio();
   audio.setMuted(muted);
@@ -655,6 +733,7 @@ function showQuestion(){
 
   const sec = Number(q.timeSec || 0) || Number(cfg('QUESTION_TIME_SEC', '12')) || 12;
   questionDeadline = Date.now() + sec * 1000;
+  if (el.timerBarFill) el.timerBarFill.style.width = '100%';
 
   if (timerLoop) clearInterval(timerLoop);
   timerLoop = setInterval(updateTimer, 100);
@@ -664,8 +743,14 @@ function showQuestion(){
 function updateTimer(){
   if (!playing || answerLocked) return;
 
-  const remain = Math.max(0, Math.ceil((questionDeadline - Date.now()) / 1000));
+  const q = roundQuestions[currentIndex];
+  const totalSec = Number((q && q.timeSec) || 0) || Number(cfg('QUESTION_TIME_SEC', '12')) || 12;
+  const remainMs = Math.max(0, questionDeadline - Date.now());
+  const remain = Math.max(0, Math.ceil(remainMs / 1000));
+  const ratio = Math.max(0, Math.min(1, remainMs / (totalSec * 1000)));
+
   el.timerChip.textContent = `เวลา ${remain}`;
+  if (el.timerBarFill) el.timerBarFill.style.width = `${ratio * 100}%`;
 
   if (remain <= 3 && remain > 0) playSfx('tick');
 
@@ -728,7 +813,7 @@ function getFingerPoints(results){
 function findTouchedOption(points){
   // ใช้ปลายนิ้วชี้เป็นตัวเลือก และขยายพื้นที่จับให้ใหญ่ขึ้น
   // ถ้าในชีต CONFIG ยังเป็นค่าเดิม 30 ระบบจะบังคับขั้นต่ำเป็น 60
-  const padding = Math.max(Number(cfg('HIT_PADDING', '70')) || 70, 60);
+  const padding = Math.max(Number(cfg('HIT_PADDING', '90')) || 90, 70);
   let best = null;
 
   document.querySelectorAll('.answer-card').forEach(card => {
