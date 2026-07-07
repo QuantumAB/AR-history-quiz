@@ -1111,6 +1111,14 @@
       transition:stroke-dashoffset .04s linear!important;
     }
 
+
+    /* V12: เส้นโหลดเริ่มจากล่างซ้าย วิ่งขึ้นก่อน แล้ววนไปทางขวา */
+    .hold-ring-line{
+      stroke-dasharray:0 100!important;
+      stroke-dashoffset:0!important;
+      transition:stroke-dasharray .04s linear!important;
+    }
+
   </style>
 </head>
 
@@ -1796,11 +1804,11 @@ function setAnswerCardContent(card, text){
   card.innerHTML = `
     <span class="answer-label">${escapeHtml(text)}</span>
     <svg class="hold-ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <!-- เริ่มที่มุมล่างซ้าย แล้ววนตามเข็มนาฬิกาให้ครบกรอบ -->
+      <!-- เริ่มจากขอบล่างซ้าย วิ่งขึ้นด้านบนก่อน แล้ววนไปทางขวาจนครบรอบ -->
       <path class="hold-ring-bg" pathLength="100"
-        d="M 20 95 L 80 95 Q 95 95 95 80 L 95 20 Q 95 5 80 5 L 20 5 Q 5 5 5 20 L 5 80 Q 5 95 20 95"></path>
+        d="M 5 80 L 5 20 Q 5 5 20 5 L 80 5 Q 95 5 95 20 L 95 80 Q 95 95 80 95 L 20 95 Q 5 95 5 80"></path>
       <path class="hold-ring-line" pathLength="100"
-        d="M 20 95 L 80 95 Q 95 95 95 80 L 95 20 Q 95 5 80 5 L 20 5 Q 5 5 5 20 L 5 80 Q 5 95 20 95"></path>
+        d="M 5 80 L 5 20 Q 5 5 20 5 L 80 5 Q 95 5 95 20 L 95 80 Q 95 95 80 95 L 20 95 Q 5 95 5 80"></path>
     </svg>
   `;
   clearHoldProgress(card);
@@ -1812,9 +1820,11 @@ function setHoldProgress(card, progress){
 
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    // CSS มี !important จึงต้อง setProperty พร้อม important ไม่งั้นเส้นจะไม่วิ่ง
-    line.style.setProperty('stroke-dasharray', '100', 'important');
-    line.style.setProperty('stroke-dashoffset', String(100 - (p * 100)), 'important');
+    // ทำให้เส้น "ค่อย ๆ ยาวขึ้น" จาก 0% ถึง 100%
+    // pathLength = 100, เริ่มจากขอบล่างซ้าย วิ่งขึ้นด้านบนก่อน แล้ววนไปทางขวา
+    const visibleLength = p * 100;
+    line.style.setProperty('stroke-dasharray', `${visibleLength} 100`, 'important');
+    line.style.setProperty('stroke-dashoffset', '0', 'important');
   }
 }
 
@@ -1823,8 +1833,9 @@ function clearHoldProgress(card){
 
   const line = card.querySelector('.hold-ring-line');
   if (line) {
-    line.style.setProperty('stroke-dasharray', '100', 'important');
-    line.style.setProperty('stroke-dashoffset', '100', 'important');
+    // 0% = ยังไม่มีเส้นฟ้า
+    line.style.setProperty('stroke-dasharray', '0 100', 'important');
+    line.style.setProperty('stroke-dashoffset', '0', 'important');
   }
 }
 
