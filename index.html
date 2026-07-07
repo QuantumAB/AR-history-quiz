@@ -516,7 +516,6 @@
         font-size:clamp(30px,4.2vw,56px);
         border-radius:28px;
         padding:12px 14px;
-        overflow:hidden;
         transform-origin:center;
       }
 
@@ -574,7 +573,6 @@
         font-size:clamp(22px,6.4vw,36px);
         border-radius:20px;
         padding:8px 8px;
-        overflow:hidden;
       }
 
       .pos-1{left:10px; top:32%}
@@ -811,6 +809,53 @@
       box-shadow:0 0 18px rgba(255,210,31,.65);
       z-index:2;
       pointer-events:none;
+    }
+
+
+    /* V8: เส้นโหลดสีฟ้ารอบคำตอบตามเวลา HOLD_MS */
+    .answer-card{
+      overflow:visible!important;
+      isolation:isolate;
+    }
+
+    .answer-card::before{
+      content:"";
+      position:absolute;
+      inset:-9px;
+      border-radius:calc(24px + 9px);
+      background:
+        conic-gradient(from -90deg,
+          #21d7ff calc(var(--hold,0) * 1turn),
+          rgba(255,255,255,.14) 0);
+      opacity:0;
+      transition:opacity .08s linear;
+      z-index:-1;
+      pointer-events:none;
+      box-shadow:0 0 24px rgba(33,215,255,.48);
+    }
+
+    .answer-card.hover::before{
+      opacity:1;
+    }
+
+    @media (orientation:landscape){
+      .answer-card::before{
+        border-radius:calc(24px + 9px);
+      }
+    }
+
+    @media (orientation:portrait){
+      .answer-card::before{
+        inset:-7px;
+        border-radius:calc(20px + 7px);
+      }
+    }
+
+    @media (max-height:620px) and (orientation:landscape){
+      .answer-card::before{
+        inset:-7px;
+        border-radius:calc(20px + 7px);
+      }
     }
 
   </style>
@@ -1173,6 +1218,7 @@ function onHandsResults(results){
   document.querySelectorAll('.answer-card').forEach(c => c.classList.toggle('hover', c.dataset.key === touched.key));
 
   if (currentHoverKey !== touched.key) {
+    document.querySelectorAll('.answer-card').forEach(c => c.style.removeProperty('--hold'));
     currentHoverKey = touched.key;
     holdStart = Date.now();
     playSfx('hover');
@@ -1181,7 +1227,7 @@ function onHandsResults(results){
   const holdMs = Number(cfg('HOLD_MS', '800')) || 800;
   const progress = clamp((Date.now() - holdStart) / holdMs, 0, 1);
 
-  // แสดงความคืบหน้าการแช่ด้วยเงา/ขอบปุ่มแทนวงกลม
+  // แสดงความคืบหน้าการแช่เป็นเส้นสีฟ้าวิ่งรอบคำตอบ
   if (touched.card) touched.card.style.setProperty('--hold', progress);
 
   if (progress >= 1) {
